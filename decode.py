@@ -88,12 +88,17 @@ class APDURequest:
 class APDUResponse:
     def __init__(self, data):
         self.data = data
+        self.payload = ''
+        if len(data) > 2:
+            self.payload = data[:len(data)-2]
         self.code = APDUCode(data)
 
     
     def toString(self,):
         s = ''
-        s += self.code.toString()
+        if (len(self.payload)) > 0:
+            s += hexlify(self.payload).decode()
+        s +=  ' '+ self.code.toString()
         return s
 
 class CCIDPacket:
@@ -143,37 +148,45 @@ class Decoder:
     
     def toString(self,):
         s = '>> '
+        parse_res_dos = False
         if self.ins == 0xCA:
             # xCA: get data
-            description = '?'
+            info = {'description': '?', 'type': '?'}
             if self.P in DO_table['GET']:
-                description = DO_table['GET'][self.P]['description']
+                info = DO_table['GET'][self.P]
 
-            s += 'GET DATA [CA] %s [%02x%02x]' % (description, self.p1,self.p2)
+            s += 'GET DATA [CA] %s [%02x%02x]' % (info['description'], self.p1,self.p2)
+
+            if info['type'] in 'Cc':
+                parse_res_dos = True
 
             assert(self.req.length == 0)
 
         elif self.ins == 0xDA or self.ins == 0xDB:
 
-            description = '?'
+            info = {'description': '?', 'type': '?'}
             if self.P in DO_table['PUT']:
-                description = DO_table['PUT'][self.P]['description']
+                info = DO_table['PUT'][self.P]
 
 
-            s += '%02x %02x PUT DATA [DB] %s [%02x%02x] ' % (self.cla, self.ins, description, self.p1,self.p2)
+            s += '%02x %02x PUT DATA [DB] %s [%02x%02x] ' % (self.cla, self.ins, info['description'], self.p1,self.p2)
             # s += hexlify(self.req.payload).decode()
             s += ' (%d)' % (self.req.length)
 
-            dos = DO.parse(self.req.payload, False)
-            s += '\n'+(dos[0].toString())
+            if info['type'] in 'Cc':
+                dos = DO.parse(self.req.payload, False)
+                s += '\n'+(dos[0].toString())
+            else:
+                s +='\n    ' + hexlify(req.payload).decode()
+            
 
 
         elif self.ins == 0x47:
             # x47: generate asymmetric key
             if self.p1 == 0x80:
-                s += 'Generate asymmetric key pair: '
+                s += 'Generate asymmetric key pair [80]: '
             elif self.p1 == 0x81:
-                s += 'Read asymmetric public key: '
+                s += 'Read asymmetric public key [81]: '
             else:
                 raise RuntimeError('Invalid P1 for x47 ins command: ' + hex(self.p1))
             assert(self.req.length == 2)
@@ -191,10 +204,18 @@ class Decoder:
             pw = self.p2 ^ 0x80
             assert(pw in (1,2,3))
             s += 'VERIFY PW%d  %s' % (pw, (req.payload).decode())
+        elif self.ins == 0xC0:
+            s += 'GET RESPONSE'
         else:
-            s = self.req.toString()
+            s += self.req.toString()
         
-        s += '\n' + self.res.toString()
+        s += '\n<< ' 
+        if parse_res_dos:
+            dos = DO.parse(self.res.payload, True)
+            s += '\n'+(dos[0].toString())
+        else:
+            s += self.res.toString()
+
         return s
 
 
@@ -243,6 +264,7 @@ def coalesce_pairs(pairs):
     # combine APDUs that were split due to payload size
     new_pairs = []
     firstreq = None
+    # Combine requests
     for i,(req,res) in enumerate(pairs):
         if (req.header[0] & 0x10) and res.code.code == 0x9000:
             if firstreq is None:
@@ -258,6 +280,29 @@ def coalesce_pairs(pairs):
                 firstreq.length += req.length
                 assert(len(firstreq.payload) == firstreq.length)
                 new_pairs.append((firstreq, res))
+                firstreq = None
+
+    pairs = new_pairs[:]
+    new_pairs = []
+    firstres = None
+    firstreq = None
+    # Combine responses
+    for i,(req,res) in enumerate(pairs):
+        if (res.code.code & 0x6100) == 0x6100:
+            if (req.header[1] == 0xC0):
+                if firstres is None:
+                    raise RuntimeError('Host sent unsolicited GET RESPONSE')
+                firstres.payload = firstres.payload + res.payload
+            else:
+                firstres = res
+                firstreq = req
+        else:
+            if firstres is None or (req.header[1] != 0xC0):
+                new_pairs.append((req,res))
+            else:
+                firstres.payload = firstres.payload + res.payload
+                new_pairs.append((firstreq, firstres))
+                firstres = None
                 firstreq = None
     return new_pairs
 

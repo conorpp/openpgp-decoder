@@ -71,7 +71,7 @@ class DO:
             des = '%02x%02x' % (t1, t2)
             if (t1 == 0):
                 des = '%02x' % (t2)
-            info = {'description': des, 'type':'?'}
+            info = {'description': '?', 'type':'?'}
 
             self.known = False
         else:
@@ -86,7 +86,7 @@ class DO:
 
     def toString(self, depth=1):
         space = '    ' * depth
-        s = space + ('%s: ' % (self.info['description']))
+        s = space + ('%s [%04x]: ' % (self.info['description'], self.tag))
 
         if not self.constructed:
             if self.isTemplate():
