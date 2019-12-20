@@ -32,6 +32,11 @@ DO_table = {
         0x007A: {'description': '5. Security support template.', 'type': 'C', },
         0x0093: {'description': '3. Digital signature counter.', 'type': 'S', },
         0x7F21: {'description': '0-max. Cardholder certificates (AUT, DEC, SIG).', 'type': 'C', },
+
+        0x7F49: {'description': 'Public key.', 'type': 'C', },
+        0x0081: {'description': 'RSA modulus.', 'type': 'S', },
+        0x0082: {'description': 'RSA public exponent.', 'type': 'S', },
+        0x0086: {'description': 'ECC Public key.', 'type': 'S', },
     },
     'PUT':{
         0x0101: {'description': '0-max. Optional private use DO 1.', 'type': 'S', },

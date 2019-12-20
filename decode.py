@@ -187,6 +187,7 @@ class Decoder:
                 s += 'Generate asymmetric key pair [80]: '
             elif self.p1 == 0x81:
                 s += 'Read asymmetric public key [81]: '
+                parse_res_dos = True
             else:
                 raise RuntimeError('Invalid P1 for x47 ins command: ' + hex(self.p1))
             assert(self.req.length == 2)
