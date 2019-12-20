@@ -37,7 +37,6 @@ class DO:
             tag |= data[1]
             data = data[1:]
         self.tag = tag 
-
         l1 = data[1]
 
         length = l1

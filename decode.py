@@ -211,9 +211,13 @@ class Decoder:
             s += self.req.toString()
         
         s += '\n<< ' 
-        if parse_res_dos:
-            dos = DO.parse(self.res.payload, True)
-            s += '\n'+(dos[0].toString())
+        if parse_res_dos and len(self.res.payload):
+            try:
+                dos = DO.parse(self.res.payload, True)
+                s += '\n'+(dos[0].toString())
+            except:
+                s += ('\nERROR (could not parse DO): ' + hexlify(self.res.payload).decode())
+
         else:
             s += self.res.toString()
 
