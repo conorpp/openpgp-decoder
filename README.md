@@ -53,6 +53,6 @@ You need to export the packets a particular way so that the Python script can re
 1. File -> Export Packet Dissections -> As Plain Text...
 2. Make sure that all displayed packets get exported, and ONLY the bytes is checked.
 
-![](/image)
+![](https://i.imgur.com/PEmY8lB.png)
 
 Now that log file can be passed to `decode.py` as first argument.
