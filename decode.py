@@ -8,13 +8,6 @@
 # Handles:
 # * OpenPGP
 #
-# Input file:  
-#   1. Requires a text file exported from Wireshark.
-#   2. Use packet filter "usbccid && (usbccid.bMessageType == 0x6f||usbccid.bMessageType == 0x80)"
-#   3. Export packet dissections as plain text
-#   4. Choose all packets as displayed.
-#   5. Make sure that everything except for "bytes" is deselected.
-#   6. Export and give to this program.
 #
 import sys
 import binascii
@@ -214,12 +207,13 @@ class Decoder:
         if parse_res_dos and len(self.res.payload):
             try:
                 dos = DO.parse(self.res.payload, True)
-                s += '\n'+(dos[0].toString())
+                s += '\n'+(dos[0].toString()) 
             except:
                 s += ('\nERROR (could not parse DO): ' + hexlify(self.res.payload).decode())
 
         else:
             s += self.res.toString()
+        s = s + (' (%d bytes total)' % len(self.res.payload))
 
         return s
 

@@ -23,8 +23,19 @@ SELECT OpenPGP Card
 >> GET DATA [CA] var. Application Related Data. [006e]
 << 
     var. Application Related Data. [006e]: 
-        ? [4f10]: 7600012401020100060869106200005f520800730000800590007f74038101207381b7c00a3c00000004c000ff00ffc106010800001100c206011000001100c306011000001100c407017f7f7f030003c53c549e4beda81d4cfa51da463f6af3e30dc987c8fe43eee30ef73bfd53e25cb0d1dae105de65de9c0407c3573447987972785915e1bd5c5f1fc3c313bbc63c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cd0c5dfcf6ba
-        ? [005d]: 0bbc5dfc0c54
+        5-16. Full AID. [004f]: d2760001240102010006086910620000
+        0-15.  Historical bytes. [5f52]: 0073000080059000
+        3. Optional general feature management. [7f74]: 
+            RSA modulus. [0081]: 20
+        var. Discretionary data objects. [0073]: 
+            10. Extended capabilities. [00c0]: 3c00000004c000ff00ff
+            var. Algorithm attributes signature. [00c1]: 010800001100
+            var. Algorithm attributes decryption. [00c2]: 011000001100
+            var. Algorithm attributes authentication. [00c3]: 011000001100
+            7. PW status Bytes (PW1, PW1 max length, RC max length, PW3 max length, ...) [00c4]: 017f7f7f030003
+            60. fingerprints, 20 bytes each for sig,dec,auth. [00c5]: 549e4beda81d4cfa51da463f6af3e30dc987c8fe43eee30ef73bfd53e25cb0d1dae105de65de9c0407c3573447987972785915e1bd5c5f1fc3c313bb
+            60. CA fingerprints, 20 bytes each. [00c6]: 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+            12. List of 3, 4-byte dates for pubkey pairs. [00cd]: 5dfcf6ba5dfc0bbc5dfc0c54 (224 bytes total)
 ...
 ...
 ...

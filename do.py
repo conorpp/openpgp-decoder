@@ -26,13 +26,17 @@ class DO:
         self.tag = 0
         self.parent = parent
 
+        table = DO_table['GET'] 
+        if not GET:
+            table = DO_table['PUT']
+
         if isinstance(data, str):
             data = unhexlify(data)
         
         self.data = data
         self.payload = ''
         tag = data[0]
-        if (tag & 0x0f) == 0x0f:
+        if ((tag & 0x0f) == 0x0f) and tag not in table:
             tag = tag << 8
             tag |= data[1]
             data = data[1:]
@@ -59,9 +63,7 @@ class DO:
         if not self.isTemplate():
             self.leftover = self.leftover[len(self.payload):]
 
-        table = DO_table['GET'] 
-        if not GET:
-            table = DO_table['PUT']
+
 
         info = table.get(self.tag, '')
         if not info:
